@@ -1,0 +1,30 @@
+[project]
+name = "pfun-llm"
+version = "0.1.0"
+description = "LLM backend interfaces for pfun."
+readme = "README.md"
+requires-python = ">=3.11, <3.13"
+dependencies = [
+]
+
+[project.urls]
+Homepage = "https://github.com/pfun-health/pfun-llm"
+Documentation = "https://pfun-health.github.io/pfun-llm/"
+Repository = "https://github.com/pfun-health/pfun-llm"
+Issues = "https://github.com/pfun-health/pfun-llm/issues"
+Changelog = "https://pfun-health.github.io/pfun-llm/release-notes/"
+
+[project.optional-dependencies]
+# ollama-related dependencies
+ollama = [
+  "ollama==0.6.1",
+]
+# Google-related dependencies
+google = [
+  "google==3.0.0",
+  "google-genai==1.57.0",
+]
+# Perplexity-related dependencies
+perplexity = [
+    "perplexityai>=0.22.0",
+]
