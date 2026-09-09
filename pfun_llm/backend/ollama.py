@@ -78,10 +78,10 @@ class OllamaGenerativeModel(BaseGenerativeModel):
 
     def __new__(cls, *args, **kwargs):
         """Create a new instance of OllamaGenerativeModel."""
-        obj = super().__new__(cls, *args, **kwargs)
+        obj = super().__new__(cls)
         get_settings = importlib.import_module("pfun_common.settings").get_settings  # type: ignore
         settings = get_settings()
-        obj._default_model = kwargs.get("model", settings.ollama_model)
+        obj._default_model = kwargs.get("model") or settings.ollama_model
         return obj
 
     def __init__(self, model: str | None = None, **kwargs):
@@ -109,13 +109,13 @@ class OllamaGenerativeModel(BaseGenerativeModel):
         )
         return response
 
-    def call_genai_client(
+    async def call_genai_client(
         self,
         model: Optional[str] = None,
         contents: Optional[list | str | OllamaMessages | OllamaMessage] = None,
         stream: bool = True,
         **kwds,
-    ) -> None | Any | asyncio.Future:
+    ) -> None | Any:
         """Call the API client with the specified model and contents.
 
         :param: stream [bool] : flag to indicate streaming for the agent chat call.
@@ -130,8 +130,7 @@ class OllamaGenerativeModel(BaseGenerativeModel):
             repr(serialized_messages),
         )
         try:
-            # ensure the response is an awaitable (avoid making this method async, handle in context)
-            return self.chat(model=model, messages=serialized_messages)
+            return await self.chat(model=model, messages=serialized_messages)
         except ollama._types.ResponseError as exc:  # type: ignore
             logging.error("Ollama API error: %s", exc)
             if exc.status_code == 404:
@@ -143,7 +142,7 @@ class OllamaGenerativeModel(BaseGenerativeModel):
                 logging.info("Pull response: %s", prog_response)
                 if prog_response.status.lower() == "completed":  # type: ignore
                     logging.info("Model pulled successfully. Retrying the API call.")
-                    return self.chat(model=model, messages=serialized_messages)
+                    return await self.chat(model=model, messages=serialized_messages)
             # if we reach here, it means the error was not a 404 or the pull did not succeed, so we raise the error
             raise RuntimeError(f"Ollama API error: {exc}") from exc
 
@@ -156,7 +155,12 @@ class OllamaGenerativeModel(BaseGenerativeModel):
         """
         get_settings = importlib.import_module("pfun_common.settings").get_settings  # type: ignore
         settings = get_settings()
-        client = AsyncClient(host=settings.ollama_host)
+        headers = (
+            {"Authorization": f"Bearer {settings.ollama_api_key}"}
+            if settings.ollama_api_key
+            else None
+        )
+        client = AsyncClient(host=settings.ollama_host, headers=headers)
         logging.debug("Ollama API client setup successfully.")
         logging.debug("Ollama API client: %s", repr(client))
         return client
