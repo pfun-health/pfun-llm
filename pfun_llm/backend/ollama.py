@@ -156,11 +156,12 @@ class OllamaGenerativeModel(BaseGenerativeModel):
         get_settings = importlib.import_module("pfun_common.settings").get_settings  # type: ignore
         settings = get_settings()
         headers = (
-            {"Authorization": f"Bearer {settings.ollama_api_key}"}
+            {"authorization": f"Bearer {settings.ollama_api_key}"}
             if settings.ollama_api_key
             else None
         )
         client = AsyncClient(host=settings.ollama_host, headers=headers)
         logging.debug("Ollama API client setup successfully.")
+        logging.debug("Ollama client headers:\n'%s'", str(client._client.headers))
         logging.debug("Ollama API client: %s", repr(client))
         return client

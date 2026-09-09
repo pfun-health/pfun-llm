@@ -7,12 +7,12 @@ multiple providers, with a pluggable backend architecture.
 
 ## Backends
 
-| Backend     | Module                       | Configuration                              |
-|-------------|------------------------------|--------------------------------------------|
-| Ollama      | `pfun_llm.backend.ollama`    | `OLLAMA_HOST`, `OLLAMA_MODEL`, `OLLAMA_API_KEY` |
-| Google      | `pfun_llm.backend.google`    | `GOOGLE_API_KEY`, `GOOGLE_CLOUD_PROJECT_ID`, `GOOGLE_CLOUD_LOCATION` |
-| Perplexity  | `pfun_llm.backend.perplexity`| `PERPLEXITY_API_KEY`                       |
-| OpenAI      | `pfun_llm.backend.openai`    | `OPENAI_KEY`                               |
+| Backend    | Module                        | Configuration                                                        |
+|------------|-------------------------------|----------------------------------------------------------------------|
+| Ollama     | `pfun_llm.backend.ollama`     | `OLLAMA_HOST`, `OLLAMA_MODEL`, `OLLAMA_API_KEY`                      |
+| Google     | `pfun_llm.backend.google`     | `GOOGLE_API_KEY`, `GOOGLE_CLOUD_PROJECT_ID`, `GOOGLE_CLOUD_LOCATION` |
+| Perplexity | `pfun_llm.backend.perplexity` | `PERPLEXITY_API_KEY`                                                 |
+| OpenAI     | `pfun_llm.backend.openai`     | `OPENAI_KEY`                                                         |
 
 All settings are read from `pfun_common.settings` (environment variables or a
 `.env` file). The "Ollama" backend is the primary production dependency.
