@@ -1,4 +1,5 @@
 """Google-backend class for generative model interfaces."""
+
 import logging
 import os
 from typing import Optional
@@ -23,7 +24,7 @@ class GeminiGenerativeModel(BaseGenerativeModel):
         return self._client.models.generate_content(model=model, contents=contents)
 
     @classmethod
-    def setup_genai_client(cls) -> genai.Client:
+    def setup_genai_client(cls, **kwargs) -> genai.Client:
         """Setup the Gemini API client.
 
         Returns:

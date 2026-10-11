@@ -70,6 +70,22 @@ def _format_messages(raw_messages: str | list, role: str = "user") -> OllamaMess
     )
 
 
+def gather_ollama_settings() -> dict:
+    ollama_settings = dict(
+        model=_OLLAMA_DEFAULT_MODEL,
+    )
+    get_settings = importlib.import_module("pfun_common.settings").get_settings  # type: ignore
+    settings = get_settings()
+    ollama_settings.update(
+        {
+            k.lower().replace("ollama_", ""): v
+            for k, v in settings
+            if k.lower().startswith("ollama_")
+        }
+    )
+    return ollama_settings
+
+
 class OllamaGenerativeModel(BaseGenerativeModel):
     """Ollama-backend class for generative model interfaces."""
 
@@ -79,15 +95,11 @@ class OllamaGenerativeModel(BaseGenerativeModel):
     def __new__(cls, *args, **kwargs):
         """Create a new instance of OllamaGenerativeModel."""
         obj = super().__new__(cls, *args, **kwargs)
-        get_settings = importlib.import_module("pfun_common.settings").get_settings  # type: ignore
-        settings = get_settings()
-        obj._default_model = kwargs.get("model", settings.ollama_model)
         return obj
 
     def __init__(self, model: str | None = None, **kwargs):
         super().__init__(model, **kwargs)
-        # Set the default model for this instance (use settings)
-        logging.debug(f"OllamaGenerativeModel initialized with model: {self._model}")
+        # logging.debug(f"OllamaGenerativeModel initialized with model: {self._model}")
 
     async def stream_chat(self, messages, model=None):
         if model is None:
@@ -120,7 +132,7 @@ class OllamaGenerativeModel(BaseGenerativeModel):
 
         :param: stream [bool] : flag to indicate streaming for the agent chat call.
         """
-        model = super().call_genai_client(model=model, contents=contents, **kwds) # type: ignore
+        model = super().call_genai_client(model=model, contents=contents, **kwds)  # type: ignore
         if not isinstance(contents, OllamaMessages):
             contents = _format_messages(contents)  # type: ignore
         serialized_messages = contents.model_dump()["messages"]
@@ -147,16 +159,13 @@ class OllamaGenerativeModel(BaseGenerativeModel):
             # if we reach here, it means the error was not a 404 or the pull did not succeed, so we raise the error
             raise RuntimeError(f"Ollama API error: {exc}") from exc
 
-    @classmethod
-    def setup_genai_client(cls) -> AsyncClient:
+    def setup_genai_client(self, **kwargs) -> AsyncClient:
         """Setup the API client for ollama backend.
 
         Returns:
             ollama.AsyncClient: The ollama API client.
         """
-        get_settings = importlib.import_module("pfun_common.settings").get_settings  # type: ignore
-        settings = get_settings()
-        client = AsyncClient(host=settings.ollama_host)
+        client = AsyncClient(**kwargs)
         logging.debug("Ollama API client setup successfully.")
         logging.debug("Ollama API client: %s", repr(client))
         return client

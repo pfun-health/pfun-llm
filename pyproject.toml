@@ -1,10 +1,12 @@
 [project]
 name = "pfun-llm"
-version = "0.1.0"
+version = "0.1.1"
 description = "LLM backend interfaces for pfun."
 readme = "README.md"
 requires-python = ">=3.11, <3.13"
+
 dependencies = [
+  "pfun-common"
 ]
 
 [project.urls]
@@ -28,3 +30,11 @@ google = [
 perplexity = [
     "perplexityai>=0.22.0",
 ]
+
+[dependency-groups]
+dev = [
+    "ipython>=9.17.1",
+]
+
+[tool.uv.sources]
+pfun-common = { git = "https://github.com/pfun-health/pfun-common" }

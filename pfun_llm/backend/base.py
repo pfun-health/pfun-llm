@@ -11,8 +11,8 @@ class BaseGenerativeModel:
 
     def __init__(self, model: Optional[str] = None, **kwargs):
         self._model = model if model is not None else self.__class__._default_model
-        self._client = self.setup_genai_client()
         self._extra_kwds = kwargs or {}
+        self._client = self.setup_genai_client(**self._extra_kwds)
 
     def __call__(
         self,
@@ -39,8 +39,7 @@ class BaseGenerativeModel:
             model = self._model
         return model
 
-    @classmethod
-    def setup_genai_client(cls):
+    def setup_genai_client(self, **kwargs):
         """Setup the API client.
 
         Returns:
