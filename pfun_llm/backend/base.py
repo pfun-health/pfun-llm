@@ -1,48 +1,27 @@
-"""Base class for generative model interfaces."""
+"""Abstract embedding backend interface."""
+from abc import ABC, abstractmethod
+from typing import List, Sequence, Union
 
-from typing import Optional, Any
+import numpy as np
 
 
-class BaseGenerativeModel:
-    """Base class for generative model interfaces."""
+class EmbeddingBackend(ABC):
+    """Base class for all embedding backends."""
 
-    #: The default model to use if no model is specified.
-    _default_model: Optional[str] = None
+    @abstractmethod
+    def embed(self, texts: Union[str, Sequence[str]]) -> np.ndarray:
+        """Return an array of shape (n_texts, dim)."""
 
-    def __init__(self, model: Optional[str] = None, **kwargs):
-        self._model = model if model is not None else self.__class__._default_model
-        self._extra_kwds = kwargs or {}
-        self._client = self.setup_genai_client(**self._extra_kwds)
+    def embed_query(self, text: str) -> List[float]:
+        return self.embed(text)[0].tolist()
 
-    def __call__(
-        self,
-        model: Optional[str] = None,
-        contents: Optional[list | str] = None,
-        **kwargs,
-    ) -> None | Any:
-        """Call the API with the specified model and contents."""
-        if model is None:
-            model = self._model
-        if contents is None:
-            raise ValueError("Contents must be provided.")
-        return self.call_genai_client(model=model, contents=contents, **kwargs)
+    def embed_documents(self, texts: Sequence[str]) -> List[List[float]]:
+        return self.embed(texts).tolist()
 
-    def generate_content(self, prompt: str, **kwargs) -> None | Any:
-        """(convenience method) Generate content using the specified prompt."""
-        return self(model=self._model, contents=prompt, **kwargs)
-
-    def call_genai_client(
-        self, model: Optional[str] = None, contents: Optional[list | str] = None, **kwds
-    ) -> None | Any:
-        """Call the API client with the specified model and contents."""
-        if model is None:
-            model = self._model
-        return model
-
-    def setup_genai_client(self, **kwargs):
-        """Setup the API client.
-
-        Returns:
-            genai.Client: The API client.
-        """
-        raise NotImplementedError("This method should be implemented by subclasses.")
+    def similarity(self, a: Union[str, Sequence[str]],
+                   b: Union[str, Sequence[str]]) -> np.ndarray:
+        """Cosine similarity matrix between texts in `a` and `b`."""
+        ea, eb = self.embed(a), self.embed(b)
+        ea = ea / np.linalg.norm(ea, axis=1, keepdims=True)
+        eb = eb / np.linalg.norm(eb, axis=1, keepdims=True)
+        return ea @ eb.T
