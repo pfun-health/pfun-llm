@@ -1,3 +1,7 @@
+# also ignore the uv lockfile (to avoid having to maintain it)
+uv.lock
+
+
 # Created by https://www.toptal.com/developers/gitignore/api/python,emacs,node
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,emacs,node
 
