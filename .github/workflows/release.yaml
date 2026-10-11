@@ -1,0 +1,82 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write   # needed to push version commit, create tags, and create GitHub Release
+
+jobs:
+  test:
+    name: Run Tests
+    uses: ./.github/workflows/test.yaml
+
+  release:
+    name: Create Release
+    needs: test          # only runs if tests pass
+    runs-on: ubuntu-latest
+    # skip the version-bump commit to avoid release loops
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # PAT (GH_TOKEN secret) lets the push trigger downstream workflows
+          token: ${{ secrets.GH_TOKEN || github.token }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install dependencies
+        run: uv sync --all-extras --group dev --link-mode copy
+
+      - name: Configure git identity
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump patch version
+        run: uv version --bump patch
+
+      - name: Read new version
+        id: version
+        run: |
+          VERSION=$(uv version --short)
+          echo "value=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build package
+        run: uv build --no-cache --wheel --sdist
+
+      - name: Commit version bump
+        run: |
+          git add pyproject.toml uv.lock
+          git commit -m "(${{ steps.version.outputs.value }}) bump to new version. [skip ci]"
+
+      - name: Create version tag
+        run: git tag "${{ steps.version.outputs.value }}" || echo "skipping tag creation."
+
+      - name: Push commit and tag
+        run: |
+          git push origin HEAD "${{ steps.version.outputs.value }}" || echo "skipping push to remote/tag."
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.value }}
+          name: "v${{ steps.version.outputs.value }}"
+          body: |
+            Automated release — patch version bump.
+
+            ### Assets
+            Built wheel and source distribution are attached below.
+          files: dist/*
+          draft: true
+          prerelease: true
+
+      - name: Publish GitHub Release
+        run: gh release edit "${{ steps.version.outputs.value }}" --draft=false
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
