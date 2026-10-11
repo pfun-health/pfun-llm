@@ -1,6 +1,6 @@
 [project]
 name = "pfun-llm"
-version = "0.1.1"
+version = "0.1.4"
 description = "LLM backend interfaces for pfun."
 readme = "README.md"
 requires-python = ">=3.11, <3.13"
@@ -17,6 +17,12 @@ Issues = "https://github.com/pfun-health/pfun-llm/issues"
 Changelog = "https://pfun-health.github.io/pfun-llm/release-notes/"
 
 [project.optional-dependencies]
+# dev/test dependencies
+dev = [
+  "pytest>=7.0",
+  "pytest-asyncio>=0.21",
+  "ipython>=9.17.1"
+]
 # ollama-related dependencies
 ollama = [
   "ollama==0.6.1",
@@ -31,10 +37,12 @@ perplexity = [
     "perplexityai>=0.22.0",
 ]
 
-[dependency-groups]
-dev = [
-    "ipython>=9.17.1",
-]
-
 [tool.uv.sources]
 pfun-common = { git = "https://github.com/pfun-health/pfun-common" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+addopts = "--tb=short --durations=5"
+asyncio_mode = "auto"
+
