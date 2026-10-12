@@ -1,5 +1,5 @@
-from pfun_llm.backends.base import EmbeddingBackend
-from pfun_llm.backends.huggingface import (
+from pfun_llm.backend.base import EmbeddingBackend
+from pfun_llm.backend.huggingface import (
     EmbeddingGemma2Backend,
     HuggingFaceEmbeddingBackend,
 )

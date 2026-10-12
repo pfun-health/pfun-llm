@@ -3,7 +3,7 @@ from typing import Optional, Sequence, Union
 
 import numpy as np
 
-from pfun_llm.backends.base import EmbeddingBackend
+from pfun_llm.backend.base import EmbeddingBackend
 
 
 class HuggingFaceEmbeddingBackend(EmbeddingBackend):
