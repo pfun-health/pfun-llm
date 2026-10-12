@@ -1,8 +1,35 @@
 """Abstract embedding backend interface."""
 from abc import ABC, abstractmethod
-from typing import List, Sequence, Union
+from typing import Any, List, Optional, Sequence, Union
 
 import numpy as np
+
+
+class BaseGenerativeModel:
+    """Base class for all generative model backends."""
+
+    _default_model: Optional[str] = None
+
+    def __init__(self, model: Optional[str] = None, **kwargs):
+        self._model = model if model is not None else self._default_model
+        self._extra_kwds = kwargs
+        self._client = self.setup_genai_client()
+
+    def __call__(self, *args, **kwargs) -> Any:
+        return self.call_genai_client(*args, **kwargs)
+
+    def generate_content(self, contents: Any, **kwargs) -> Any:
+        return self.call_genai_client(contents=contents, **kwargs)
+
+    def call_genai_client(
+        self, model: Optional[str] = None, contents: Any = None, **kwargs
+    ) -> Optional[str]:
+        if contents is None:
+            raise ValueError("Contents must be provided")
+        return model if model is not None else self._model
+
+    def setup_genai_client(self) -> Any:
+        raise NotImplementedError
 
 
 class EmbeddingBackend(ABC):
