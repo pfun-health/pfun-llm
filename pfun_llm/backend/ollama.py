@@ -161,7 +161,8 @@ class OllamaGenerativeModel(BaseGenerativeModel):
             # if we reach here, it means the error was not a 404 or the pull did not succeed, so we raise the error
             raise RuntimeError(f"Ollama API error: {exc}") from exc
 
-    def setup_genai_client(self, **kwargs) -> AsyncClient:
+    @classmethod
+    def setup_genai_client(cls, **kwargs) -> AsyncClient:
         """Setup the API client for ollama backend.
 
         Returns:
